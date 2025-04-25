@@ -7,6 +7,7 @@ import java.util.*;
 public class DecrypterByBruteForce
 {
     private final Encrypter encrypter = new Encrypter();
+    private final int coincidence = 10;
 
     public List<List<String>> decrypt(List<Character> alphabet, List<String> encryptedData, List<String> representativeData) throws NoCoincidenceException
     {
@@ -19,10 +20,7 @@ public class DecrypterByBruteForce
             variationsList.add(encrypter.encrypt(alphabet, encryptedData, key));
             wordFrequency = new HashMap<>();
 
-//            for (String line : variationsList.get(key))
-//            {
-//                countWordFrequency(separate(line), wordFrequency);
-//            }
+
             countWordFrequency(separate(variationsList.get(key)), wordFrequency);
             comparasionList.add(sortMapByValue(wordFrequency));    //Положить в лист 5 key по самым большим values из wordFrequency
 
@@ -82,7 +80,7 @@ public class DecrypterByBruteForce
 
         Set<String> sortedSet = new HashSet<>();
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < coincidence; i++)
         {
             sortedSet.add(sortingList.get(i).getKey());
         }
