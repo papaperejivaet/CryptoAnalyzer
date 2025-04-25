@@ -14,37 +14,42 @@ public class DecrypterByBruteForce
         List<Set<String>> comparasionList = new ArrayList<>();
         int key = 0;
         Map<String, Integer> wordFrequency;
-        while (key < alphabet.size() - 1)
+        while (key < alphabet.size())
         {
             variationsList.add(encrypter.encrypt(alphabet, encryptedData, key));
             wordFrequency = new HashMap<>();
 
-            for (String line : variationsList.get(key))
-            {
-                countWordFrequency(separate(line), wordFrequency);
-            }
+//            for (String line : variationsList.get(key))
+//            {
+//                countWordFrequency(separate(line), wordFrequency);
+//            }
+            countWordFrequency(separate(variationsList.get(key)), wordFrequency);
             comparasionList.add(sortMapByValue(wordFrequency));    //Положить в лист 5 key по самым большим values из wordFrequency
 
             key++;
         }
 
         wordFrequency = new HashMap<>();
-        countWordFrequency(representativeData, wordFrequency);
+        countWordFrequency(separate(representativeData), wordFrequency);
 
 
         return returnResult(comparasionList, variationsList, sortMapByValue(wordFrequency));
     }
 
-    private List<String> separate(String line)
+
+    private List<String> separate(List<String> list)
     {
         List<String> dividedLine = new LinkedList<>();
-        StringTokenizer separator = new StringTokenizer(line, " ,.!?");
-
-        while (separator.hasMoreTokens())
+        for (String line : list)
         {
-            dividedLine.add(separator.nextToken());
-        }
 
+            StringTokenizer separator = new StringTokenizer(line, " ,.!?");
+
+            while (separator.hasMoreTokens())
+            {
+                dividedLine.add(separator.nextToken());
+            }
+        }
         return dividedLine;
     }
 
