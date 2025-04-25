@@ -15,6 +15,7 @@ public class DecrypterByBruteForce
         List<Set<String>> comparasionList = new ArrayList<>();
         int key = 0;
         Map<String, Integer> wordFrequency;
+        Map<String, Integer> representativeWordFrequency;
         while (key < alphabet.size())
         {
             variationsList.add(encrypter.encrypt(alphabet, encryptedData, key));
@@ -27,11 +28,11 @@ public class DecrypterByBruteForce
             key++;
         }
 
-        wordFrequency = new HashMap<>();
-        countWordFrequency(separate(representativeData), wordFrequency);
+        representativeWordFrequency = new HashMap<>();
+        countWordFrequency(separate(representativeData), representativeWordFrequency);
 
 
-        return returnResult(comparasionList, variationsList, sortMapByValue(wordFrequency));
+        return returnResult(comparasionList, variationsList, sortMapByValue(representativeWordFrequency));
     }
 
 
