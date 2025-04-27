@@ -1,6 +1,6 @@
 package exceptions;
 
-public class FileIsEmptyException extends RuntimeException
+public class FileIsEmptyException extends Exception
 {
     public FileIsEmptyException()
     {

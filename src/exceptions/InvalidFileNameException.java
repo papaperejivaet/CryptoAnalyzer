@@ -1,6 +1,6 @@
 package exceptions;
 
-public class InvalidFileNameException extends RuntimeException
+public class InvalidFileNameException extends Exception
 {
     public InvalidFileNameException()
     {

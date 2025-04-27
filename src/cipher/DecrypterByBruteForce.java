@@ -23,7 +23,7 @@ public class DecrypterByBruteForce
 
 
             countWordFrequency(separate(variationsList.get(key)), wordFrequency);
-            comparasionList.add(sortMapByValue(wordFrequency));    //Положить в лист 5 key по самым большим values из wordFrequency
+            comparasionList.add(sortMapByValue(wordFrequency));
 
             key++;
         }

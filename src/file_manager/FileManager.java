@@ -1,5 +1,7 @@
 package file_manager;
 
+import exceptions.FileIsEmptyException;
+import exceptions.InvalidFileNameException;
 import validation.Validator;
 
 import java.io.BufferedReader;
@@ -12,7 +14,7 @@ import java.util.List;
 
 public class FileManager
 {
-    public List<String> getData(String fileName)
+    public List<String> getData(String fileName) throws InvalidFileNameException, FileIsEmptyException
     {
         ArrayList<String> fileData = new ArrayList<>();
         Validator.validateFileName(fileName);
@@ -34,9 +36,17 @@ public class FileManager
         return fileData;
     }
 
-   public void writeData(String fileName, List<String> data)
+   public boolean writeData(String fileName, List<String> data)
    {
-       Validator.validateFileName(fileName);
+       try
+       {
+           Validator.validateFileName(fileName);
+       }
+       catch (InvalidFileNameException e)
+       {
+           System.out.println(e.getMessage());
+           return false;
+       }
        Path path = Path.of(fileName);
 
        try (BufferedWriter writer = Files.newBufferedWriter(path))
@@ -46,10 +56,12 @@ public class FileManager
                writer.write(line + "\n");
            }
            writer.flush();
+           return true;
        }
        catch (IOException e)
        {
-           throw new RuntimeException("Файл не найден!");
+           System.out.print("\nФайл не найден!");
+           return false;
        }
    }
 }
