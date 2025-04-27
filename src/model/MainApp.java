@@ -4,6 +4,7 @@ import cipher.Decrypter;
 import cipher.DecrypterByBruteForce;
 import cipher.Encrypter;
 import exceptions.FileIsEmptyException;
+import exceptions.InvalidCipherKeyException;
 import exceptions.InvalidFileNameException;
 import exceptions.NoCoincidenceException;
 import file_manager.FileManager;
@@ -18,25 +19,24 @@ public class MainApp
             'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'я', '.', ',', '«', '»', 'А', 'Б',
             'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У',
             'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я', ':', '!', '?', ' ');
-    private final Scanner userAnswer = new Scanner(System.in);
-    private final FileManager fileManager = new FileManager();
-    private final Encrypter encrypter = new Encrypter();
-    private final Decrypter decrypter = new Decrypter();
+    private static final Scanner userAnswer = new Scanner(System.in);
+    private static final FileManager fileManager = new FileManager();
+    private static final Encrypter encrypter = new Encrypter();
+    private static final Decrypter decrypter = new Decrypter();
     private final DecrypterByBruteForce decrypterByBruteForce = new DecrypterByBruteForce();
-    private final String delimiter = "*".repeat(50);
-    private boolean isRunning = true;
-    private boolean isWritten;
+    private static final String delimiter = "*".repeat(50);
+    private static boolean isRunning = true;
+    private static boolean isWritten;
     public static int answerPool;
-    public static MainApp app = new MainApp();
 
     public static void main(String[] args)
     {
-        app.drawInterface();
+        drawInterface();
     }
 
-    private void drawInterface()
+    private static void drawInterface()
     {
-        System.out.println("Добро пожаловать в программу по шифрованию!");
+        System.out.println("\nДобро пожаловать в программу по шифрованию!\n");
 
         while (isRunning)
         {
@@ -54,9 +54,9 @@ public class MainApp
         System.out.println("Спасибо за использование программы!");
     }
 
-    private void firstBranch()
+    private static void firstBranch()
     {
-        switch (Validator.validateAnswer(userAnswer))
+        switch (Validator.validateAnswer(userAnswer.nextLine()  ))
         {
             case 1 -> encryptFile();
             case 2 -> drawSecondBranch();
@@ -64,7 +64,7 @@ public class MainApp
         }
     }
 
-    private void drawSecondBranch()
+    private static void drawSecondBranch()
     {
 
         System.out.println(delimiter);
@@ -78,11 +78,11 @@ public class MainApp
         secondBranch();
     }
 
-    private void secondBranch()
+    private static void secondBranch()
     {
         answerPool = 5;
 
-        switch (Validator.validateAnswer(userAnswer))
+        switch (Validator.validateAnswer(userAnswer.nextLine()))
         {
             case 1 -> decryptFileByKey();
             case 2 -> decryptFileByBruteForce();
@@ -92,7 +92,7 @@ public class MainApp
         }
     }
 
-    private void decryptFileByKey()
+    private static void decryptFileByKey()
     {
         System.out.println(delimiter);
         List<String> encryptedData = null;
@@ -110,64 +110,79 @@ public class MainApp
         fileManager.writeData(fileName, decrypter.decrypt(ALPHABET, encryptedData, key));
     }
 
-    private void decryptFileByBruteForce()
+    private static void decryptFileByBruteForce()
     {
 
     }
 
-    private void decryptFileByAnalytics()
+    private static void decryptFileByAnalytics()
     {
 
     }
 
-    private void encryptFile()
+    private static void encryptFile()
     {
 
         List<String> data = null;
+        int key = 0;
+        String fileName = null;
+        boolean isWritten = false;
         try
         {
             data = getFile("зашифровать");
+            key = getKey();
+
         }
-        catch (InvalidFileNameException | FileIsEmptyException e)
+        catch (InvalidFileNameException | FileIsEmptyException | InvalidCipherKeyException e)
         {
             System.out.println(e.getMessage());
             return;
         }
-        int key = getKey();
-        System.out.println(delimiter);
-        do
-        {
-            String fileName = getOutputFile();
-            isWritten = fileManager.writeData(fileName, encrypter.encrypt(ALPHABET, data, key));
-        }
-        while (!isWritten);
+        List<String> encryptedData = encrypter.encrypt(ALPHABET, data, key);
 
-        System.out.println("\nФайл зашифрован!");
+        while (!isWritten)
+        {
+            fileName = getOutputFile();
+            if (fileName.equals("exit"))
+            {
+                isRunning = false;
+                return;
+            }
+            isWritten = fileManager.writeData(fileName, encryptedData);
+        }
+
+        System.out.println("Файл зашифрован!");
     }
 
-    private List<String> getFile(String choice) throws InvalidFileNameException, FileIsEmptyException
+    private static List<String> getFile(String choice) throws InvalidFileNameException, FileIsEmptyException
     {
         System.out.println(delimiter);
-        System.out.printf("Пожалуйста введите путь к текстовому файлу," +
-                " который необходимо %s: ", choice);
+        System.out.printf("""
+                Пожалуйста введите путь к текстовому файлу,
+                который необходимо %s:
+                """, choice);
         String fileName = userAnswer.nextLine();
-        System.out.println();
 
         return fileManager.getData(fileName);
     }
 
-    private int getKey()
-    {
-        System.out.print("\nПожалуйста введите ключ шифрования: ");
-        return Validator.validateCipherKey(userAnswer);
-    }
-
-    private String getOutputFile()
+    private static int getKey() throws InvalidCipherKeyException
     {
         System.out.println(delimiter);
-        System.out.print("Пожалуйста введите путь к файлу, " +
-                "в который необходимо записать зашифрованный текст: ");
-        return userAnswer.nextLine();
+        System.out.println("Пожалуйста введите ключ шифрования:");
+        return Validator.validateCipherKey(userAnswer.nextLine());
+    }
+
+    private static String getOutputFile()
+    {
+        System.out.println(delimiter);
+        System.out.print("""
+                Пожалуйста введите путь к файлу,
+                в который необходимо записать зашифрованный текст, или
+                "exit" чтобы выйти из программы:
+                """);
+        String answer = userAnswer.nextLine();
+        return answer;
     }
 
 }

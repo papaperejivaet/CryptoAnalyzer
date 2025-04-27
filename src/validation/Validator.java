@@ -28,7 +28,7 @@ public class Validator
     }
 
 //Валидирует ключ шифра. Отсеивает пустые строки и null, проверяет является ли строка числом.
-    public static int validateCipherKey(Scanner key)
+    public static int validateCipherKey(String key) throws InvalidCipherKeyException
     {
         return validateNumeric(key);
     }
@@ -49,16 +49,14 @@ public class Validator
         }
     }
 
-    public static int validateAnswer(Scanner userAnswer)
+    public static int validateAnswer(String userAnswer)
     {
-        boolean isWrong = true;
+
         int choice = 0;
 
-        while (isWrong)
-        {
-            choice = validateNumeric(userAnswer);
             try
             {
+                choice = validateNumeric(userAnswer);
                 if (choice < 0)
                 {
                     throw new NegativeAnswerException();
@@ -67,35 +65,31 @@ public class Validator
                 {
                     throw new IncorrectAnswerException();
                 }
-                isWrong = false;
             }
-            catch (NegativeAnswerException | IncorrectAnswerException e)
+            catch (NegativeAnswerException | IncorrectAnswerException | InvalidCipherKeyException e)
             {
                 System.out.println(e.getMessage());
             }
-        }
+
 
 
         return choice;
     }
 
-    private static int validateNumeric(Scanner userAnswer)
+    private static int validateNumeric(String userAnswer) throws InvalidCipherKeyException
     {
-        boolean isNumber = false;
         int choice = 0;
 
-        while (!isNumber)
-        {
             try
             {
-                choice = Integer.parseInt(userAnswer.nextLine());
-                isNumber = true;
+                choice = Integer.parseInt(userAnswer);
+
             }
             catch (NumberFormatException e)
             {
-                System.out.print("\nПожалуйста, введите целое число: ");
+                throw new InvalidCipherKeyException("Введено не целое число");
             }
-        }
+
         return choice;
     }
 }

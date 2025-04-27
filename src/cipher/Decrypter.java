@@ -1,6 +1,5 @@
 package cipher;
 
-import exceptions.NoCoincidenceException;
 
 import java.util.*;
 
