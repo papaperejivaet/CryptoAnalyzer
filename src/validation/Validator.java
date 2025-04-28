@@ -61,12 +61,8 @@ public class Validator
                 {
                     throw new NegativeAnswerException();
                 }
-                else if (choice == 0 || choice > MainApp.answerPool)
-                {
-                    throw new IncorrectAnswerException();
-                }
             }
-            catch (NegativeAnswerException | IncorrectAnswerException | InvalidCipherKeyException e)
+            catch (NegativeAnswerException | InvalidCipherKeyException e)
             {
                 System.out.println(e.getMessage());
             }

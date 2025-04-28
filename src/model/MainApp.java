@@ -1,5 +1,6 @@
 package model;
 
+import cipher.DecryptByAnalytics;
 import cipher.Decrypter;
 import cipher.DecrypterByBruteForce;
 import cipher.Encrypter;
@@ -7,9 +8,11 @@ import exceptions.FileIsEmptyException;
 import exceptions.InvalidCipherKeyException;
 import exceptions.InvalidFileNameException;
 import exceptions.NoCoincidenceException;
+import exceptions.answer_exceptions.IncorrectAnswerException;
 import file_manager.FileManager;
 import validation.Validator;
 
+import java.nio.file.Path;
 import java.util.*;
 
 public class MainApp
@@ -18,16 +21,18 @@ public class MainApp
             'в','г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у',
             'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'я', '.', ',', '«', '»', 'А', 'Б',
             'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У',
-            'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я', ':', '!', '?', ' ');
+            'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я', ':', '!', '?', ' ', ';', '-');
     private static final Scanner userAnswer = new Scanner(System.in);
     private static final FileManager fileManager = new FileManager();
     private static final Encrypter encrypter = new Encrypter();
-    private static final Decrypter decrypter = new Decrypter();
-    private final DecrypterByBruteForce decrypterByBruteForce = new DecrypterByBruteForce();
+    private static final Decrypter decrypter = new Decrypter(ALPHABET);
+    private static final DecrypterByBruteForce decrypterByBruteForce = new DecrypterByBruteForce(ALPHABET);
+    private static final DecryptByAnalytics decrypterByAnalytics = new DecryptByAnalytics(ALPHABET);
     private static final String delimiter = "*".repeat(50);
     private static boolean isRunning = true;
     private static boolean isWritten;
-    public static int answerPool;
+    private static final String DECRYPT = "расшифровать";
+    private static Path filePath;
 
     public static void main(String[] args)
     {
@@ -40,15 +45,22 @@ public class MainApp
 
         while (isRunning)
         {
-            answerPool = 3;
             isWritten = false;
+            filePath = null;
             System.out.println(delimiter);
             System.out.println("Пожалуйста выберите что вы хотите сделать:");
             System.out.println("""
                     1.Зашифровать файл
                     2.Расшифровать файл
                     3.Завершить программу""");
-            firstBranch();
+            try
+            {
+                firstBranch();
+            }
+            catch (IncorrectAnswerException e)
+            {
+                System.out.println(e.getMessage());
+            }
         }
         System.out.println(delimiter);
         System.out.println("Спасибо за использование программы!");
@@ -61,6 +73,7 @@ public class MainApp
             case 1 -> encryptFile();
             case 2 -> drawSecondBranch();
             case 3 -> isRunning = false;
+            default -> throw new IncorrectAnswerException();
         }
     }
 
@@ -73,51 +86,125 @@ public class MainApp
                     2.Расшифровать файл перебором
                     3.Расшифровать файл аналитически
                     4.Вернуться к предыдущему выбору
-                    5.Завершить программу
-                    """);
-        secondBranch();
+                    5.Завершить программу""");
+        try
+        {
+            secondBranch();
+        }
+        catch (IncorrectAnswerException e)
+        {
+            System.out.println(e.getMessage());
+        }
     }
 
     private static void secondBranch()
     {
-        answerPool = 5;
 
         switch (Validator.validateAnswer(userAnswer.nextLine()))
         {
             case 1 -> decryptFileByKey();
             case 2 -> decryptFileByBruteForce();
             case 3 -> decryptFileByAnalytics();
-            case 4 -> {}
+            case 4 ->
+            {
+            }
             case 5 -> isRunning = false;
+            default ->  throw new IncorrectAnswerException();
         }
     }
 
     private static void decryptFileByKey()
     {
-        System.out.println(delimiter);
         List<String> encryptedData = null;
+        int key;
         try
         {
-            encryptedData = getFile("расшифровать");
+            encryptedData = receiveFile("", DECRYPT);
+            key = getKey();
+        }
+        catch (InvalidFileNameException | FileIsEmptyException | InvalidCipherKeyException e)
+        {
+            System.out.println(e.getMessage());
+            return;
+        }
+
+        String fileName = getOutputFile();
+        fileManager.writeData(fileName, decrypter.decrypt(encryptedData, key));
+    }
+
+    private static void decryptFileByBruteForce()
+    {
+        List<String> encryptedData;
+        List<String> representativeData;
+        List<List<String>> decryptedData;
+        try
+        {
+            encryptedData = receiveFile("", DECRYPT);
+            representativeData = receiveFile(" репрезентативный", "использовать");
         }
         catch (InvalidFileNameException | FileIsEmptyException e)
         {
             System.out.println(e.getMessage());
             return;
         }
-        int key = getKey();
+
+        try
+        {
+            decryptedData = decrypterByBruteForce.decrypt(encryptedData, representativeData);
+
+        }
+        catch (NoCoincidenceException e)
+        {
+            System.out.println(e.getMessage());
+            return;
+        }
+
+
         String fileName = getOutputFile();
-        fileManager.writeData(fileName, decrypter.decrypt(ALPHABET, encryptedData, key));
+        if (fileName.equals("exit"))
+        {
+            isRunning = false;
+            return;
+        }
+        sendMultipleFiles(decryptedData, getOutputFile());
+
     }
 
-    private static void decryptFileByBruteForce()
+    private static void sendMultipleFiles(List<List<String>> decryptedData, String fileName)
     {
 
+        for (List<String> variation : decryptedData)
+        {
+            fileManager.writeData(fileName, variation);
+        }
     }
+
 
     private static void decryptFileByAnalytics()
     {
+        List<String> encryptedData;
+        List<List<String>> decryptedData;
+        try
+        {
+            encryptedData = receiveFile("", DECRYPT);
+        }
+        catch (InvalidFileNameException | FileIsEmptyException e)
+        {
+            System.out.println(e.getMessage());
+            return;
+        }
 
+        try
+        {
+            decryptedData = decrypterByAnalytics.decrypt(encryptedData);
+
+        }
+        catch (NoCoincidenceException e)
+        {
+            System.out.println(e.getMessage());
+            return;
+        }
+        sendMultipleFiles(decryptedData, getOutputFile());
     }
 
     private static void encryptFile()
@@ -125,11 +212,10 @@ public class MainApp
 
         List<String> data = null;
         int key = 0;
-        String fileName = null;
-        boolean isWritten = false;
+
         try
         {
-            data = getFile("зашифровать");
+            data = receiveFile("","зашифровать");
             key = getKey();
 
         }
@@ -139,7 +225,25 @@ public class MainApp
             return;
         }
         List<String> encryptedData = encrypter.encrypt(ALPHABET, data, key);
+        sendFile(encryptedData);
 
+    }
+
+    private static List<String> receiveFile(String representative, String choice) throws InvalidFileNameException, FileIsEmptyException
+    {
+        System.out.println(delimiter);
+        System.out.printf("""
+                Пожалуйста введите путь к%s текстовому файлу,
+                который необходимо %s:
+                """, representative, choice);
+        String fileName = userAnswer.nextLine();
+        filePath = Path.of(fileName);
+        return fileManager.getData(fileName);
+    }
+
+    private static void sendFile(List<String> data)
+    {
+        String fileName = null;
         while (!isWritten)
         {
             fileName = getOutputFile();
@@ -148,22 +252,10 @@ public class MainApp
                 isRunning = false;
                 return;
             }
-            isWritten = fileManager.writeData(fileName, encryptedData);
+            isWritten = fileManager.writeData(fileName, data);
         }
 
-        System.out.println("Файл зашифрован!");
-    }
-
-    private static List<String> getFile(String choice) throws InvalidFileNameException, FileIsEmptyException
-    {
-        System.out.println(delimiter);
-        System.out.printf("""
-                Пожалуйста введите путь к текстовому файлу,
-                который необходимо %s:
-                """, choice);
-        String fileName = userAnswer.nextLine();
-
-        return fileManager.getData(fileName);
+        System.out.println("Файл зашифрован");
     }
 
     private static int getKey() throws InvalidCipherKeyException
@@ -178,11 +270,10 @@ public class MainApp
         System.out.println(delimiter);
         System.out.print("""
                 Пожалуйста введите путь к файлу,
-                в который необходимо записать зашифрованный текст, или
+                в который необходимо записать текст, или
                 "exit" чтобы выйти из программы:
                 """);
-        String answer = userAnswer.nextLine();
-        return answer;
+        return userAnswer.nextLine();
     }
 
 }

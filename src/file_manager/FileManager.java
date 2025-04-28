@@ -55,6 +55,7 @@ public class FileManager
            {
                writer.write(line + "\n");
            }
+           writer.write("*".repeat(50) + "\n");
            writer.flush();
            return true;
        }

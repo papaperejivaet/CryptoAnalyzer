@@ -7,9 +7,15 @@ import java.util.*;
 public class DecrypterByBruteForce
 {
     private final Encrypter encrypter = new Encrypter();
+    private final List<Character> alphabet;
     private final int coincidence = 10;
 
-    public List<List<String>> decrypt(List<Character> alphabet, List<String> encryptedData, List<String> representativeData) throws NoCoincidenceException
+    public DecrypterByBruteForce(List<Character> alphabet)
+    {
+        this.alphabet = alphabet;
+    }
+
+    public List<List<String>> decrypt(List<String> encryptedData, List<String> representativeData) throws NoCoincidenceException
     {
         List<List<String>> variationsList = new ArrayList<>();
         List<Set<String>> comparasionList = new ArrayList<>();
