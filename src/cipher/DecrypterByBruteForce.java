@@ -19,19 +19,19 @@ public class DecrypterByBruteForce
     {
         List<List<String>> variationsList = new ArrayList<>();
         List<Set<String>> comparasionList = new ArrayList<>();
-        int key = 0;
+        int key = alphabet.size();
         Map<String, Integer> wordFrequency;
         Map<String, Integer> representativeWordFrequency;
-        while (key < alphabet.size())
+        while (key > 0)
         {
             variationsList.add(encrypter.encrypt(alphabet, encryptedData, key));
             wordFrequency = new HashMap<>();
 
 
-            countWordFrequency(separate(variationsList.get(key)), wordFrequency);
+            countWordFrequency(separate(variationsList.get(alphabet.size() - key)), wordFrequency);
             comparasionList.add(sortMapByValue(wordFrequency));
 
-            key++;
+            key--;
         }
 
         representativeWordFrequency = new HashMap<>();

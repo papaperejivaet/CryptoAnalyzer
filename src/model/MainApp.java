@@ -28,7 +28,7 @@ public class MainApp
     private static final Decrypter decrypter = new Decrypter(ALPHABET);
     private static final DecrypterByBruteForce decrypterByBruteForce = new DecrypterByBruteForce(ALPHABET);
     private static final DecrypterByAnalytics decrypterByAnalytics = new DecrypterByAnalytics(ALPHABET);
-    private static final String delimiter = "*".repeat(50);
+    private static final String DELIMITER = "*".repeat(50);
     private static boolean isRunning = true;
     private static boolean isWritten;
     private static final String DECRYPT = "расшифровать";
@@ -50,7 +50,7 @@ public class MainApp
         {
             isWritten = false;
             filePath = null;
-            System.out.println(delimiter);
+            System.out.println(DELIMITER);
             System.out.println("Пожалуйста выберите что вы хотите сделать:");
             System.out.println("""
                     1.Зашифровать файл
@@ -65,14 +65,14 @@ public class MainApp
                 System.out.println(e.getMessage());
             }
         }
-        System.out.println(delimiter);
+        System.out.println(DELIMITER);
         System.out.println("Спасибо за использование программы!");
     }
 
     private static void drawSecondBranch()
     {
 
-        System.out.println(delimiter);
+        System.out.println(DELIMITER);
         System.out.println("""
                     1.Расшифровать файл по ключу
                     2.Расшифровать файл перебором
@@ -201,6 +201,11 @@ public class MainApp
 
     private static void decryptFileByAnalytics()
     {
+        System.out.println(DELIMITER);
+        System.out.println("""
+                      Предупреждение: 
+        Метод расшифровки, основанный на статистическом 
+              анализе, может быть некорректным!""");
         List<String> encryptedData;
         List<List<String>> decryptedData;
         try
@@ -237,7 +242,7 @@ public class MainApp
 
     private static List<String> receiveFile(String representative, String choice) throws InvalidFileNameException, FileIsEmptyException
     {
-        System.out.println(delimiter);
+        System.out.println(DELIMITER);
         System.out.printf("""
                 Пожалуйста введите путь к%s текстовому файлу,
                 который необходимо %s:
@@ -249,14 +254,14 @@ public class MainApp
 
     private static int receiveKey() throws InvalidCipherKeyException
     {
-        System.out.println(delimiter);
+        System.out.println(DELIMITER);
         System.out.println("Пожалуйста введите ключ шифрования:");
         return Validator.validateCipherKey(userAnswer.nextLine());
     }
 
     private static String receiveOutputFileName()
     {
-        System.out.println(delimiter);
+        System.out.println(DELIMITER);
         System.out.print("""
                 Пожалуйста введите путь к файлу,
                 в который необходимо записать текст, или

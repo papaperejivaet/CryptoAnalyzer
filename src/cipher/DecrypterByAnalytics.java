@@ -58,12 +58,9 @@ public class DecrypterByAnalytics
     {
         Map<Character, Integer> currentValues = valuesForCurrentText(countTotalCharacters(encryptedData));
         List<List<String>> variations = createVariations(encryptedData);
-
         List<List<String>> decryptedData = new ArrayList<>();
-
         Map<Integer, Integer> deviationSquareSum = deviationSquareSumMap(currentValues, variations); // 1 - Номер варианта; 2 - сумма квадратов отклонений
-
-        int minSum = Collections.min(deviationSquareSum.values());
+        int minSum = findClosestToZero(deviationSquareSum);
 
         for (Map.Entry<Integer, Integer> entry : deviationSquareSum.entrySet())
         {
@@ -78,6 +75,22 @@ public class DecrypterByAnalytics
         }
 
         return decryptedData;
+    }
+
+    private int findClosestToZero(Map<Integer, Integer> map)
+    {
+        int minSum = Integer.MAX_VALUE;
+
+        for (int value : map.values())
+        {
+            if (Math.abs(value) < minSum)
+            {
+                minSum = value;
+
+            }
+        }
+
+        return minSum;
     }
 
     private int countTotalCharacters(List<String> data)
@@ -114,21 +127,6 @@ public class DecrypterByAnalytics
         int check = 0;
         int deviation = 0;
 
-//        for (Character letter : alphabet)
-//        {
-//            Character lowLetter = Character.toLowerCase(letter);
-//            if (currentLettersCount.containsKey(lowLetter))
-//            {
-//                deviation = currentLettersCount.get(lowLetter) - statisticLettersCount.get(lowLetter);
-//                check++;
-//            }
-//            else
-//            {
-//                deviation = statisticLettersCount.get(lowLetter) * -1;
-//            }
-//            sum += deviation * deviation;
-//
-//        }
 
         for (Map.Entry<Character, Integer> entry : currentLettersCount.entrySet())
         {
@@ -209,12 +207,12 @@ public class DecrypterByAnalytics
     private List<List<String>> createVariations(List<String> data)
     {
         List<List<String>> variations = new ArrayList<>();
-        int key = 0;
+        int key = alphabet.size();
 
-        while (key < alphabet.size())
+        while (key > 0)
         {
             variations.add(encrypter.encrypt(alphabet, data, key));
-            key++;
+            key--;
         }
         return variations;
     }
