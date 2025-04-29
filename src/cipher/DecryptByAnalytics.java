@@ -43,14 +43,8 @@ public class DecryptByAnalytics
             Map.entry('я', 2.01),
             Map.entry(' ', 15.0),
             Map.entry(',', 4.0),
-            Map.entry('.', 3.0),
-            Map.entry('-', 1.0),
-            Map.entry('!', 0.1),
-            Map.entry('?', 0.1),
-            Map.entry(':', 0.1),
-            Map.entry(';', 0.05),
-            Map.entry('«', 0.01),
-            Map.entry('»', 0.01)
+            Map.entry('.', 3.0)
+
     ); //Было TreeMap
     private final List<Character> alphabet;
     private static final Encrypter encrypter = new Encrypter();
@@ -120,20 +114,33 @@ public class DecryptByAnalytics
         int check = 0;
         int deviation = 0;
 
-        for (Character letter : alphabet)
+//        for (Character letter : alphabet)
+//        {
+//            Character lowLetter = Character.toLowerCase(letter);
+//            if (currentLettersCount.containsKey(lowLetter))
+//            {
+//                deviation = currentLettersCount.get(lowLetter) - statisticLettersCount.get(lowLetter);
+//                check++;
+//            }
+//            else
+//            {
+//                deviation = statisticLettersCount.get(lowLetter) * -1;
+//            }
+//            sum += deviation * deviation;
+//
+//        }
+
+        for (Map.Entry<Character, Integer> entry : currentLettersCount.entrySet())
         {
-            Character lowLetter = Character.toLowerCase(letter);
-            if (currentLettersCount.containsKey(lowLetter))
+            Character lowLetter = Character.toLowerCase(entry.getKey());
+
+            if (statisticLettersCount.containsKey(lowLetter))
             {
                 deviation = currentLettersCount.get(lowLetter) - statisticLettersCount.get(lowLetter);
                 check++;
             }
-            else
-            {
-                deviation = statisticLettersCount.get(lowLetter) * -1;
-            }
-            sum += deviation * deviation;
 
+            sum += deviation * deviation;
         }
 
         if (check == 0)

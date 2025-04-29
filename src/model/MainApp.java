@@ -32,6 +32,9 @@ public class MainApp
     private static boolean isRunning = true;
     private static boolean isWritten;
     private static final String DECRYPT = "расшифровать";
+    private static final String DECRYPTED = "расшифрован";
+    private static final String ENCRYPTED = "зашифрован";
+
     private static Path filePath;
 
     public static void main(String[] args)
@@ -66,17 +69,6 @@ public class MainApp
         System.out.println("Спасибо за использование программы!");
     }
 
-    private static void firstBranch()
-    {
-        switch (Validator.validateAnswer(userAnswer.nextLine()  ))
-        {
-            case 1 -> encryptFile();
-            case 2 -> drawSecondBranch();
-            case 3 -> isRunning = false;
-            default -> throw new IncorrectAnswerException();
-        }
-    }
-
     private static void drawSecondBranch()
     {
 
@@ -97,6 +89,17 @@ public class MainApp
         }
     }
 
+    private static void firstBranch()
+    {
+        switch (Validator.validateAnswer(userAnswer.nextLine()  ))
+        {
+            case 1 -> encryptFile();
+            case 2 -> drawSecondBranch();
+            case 3 -> isRunning = false;
+            default -> throw new IncorrectAnswerException();
+        }
+    }
+
     private static void secondBranch()
     {
 
@@ -113,6 +116,28 @@ public class MainApp
         }
     }
 
+    private static void encryptFile()
+    {
+
+        List<String> data = null;
+        int key = 0;
+
+        try
+        {
+            data = receiveFile("","зашифровать");
+            key = receiveKey();
+
+        }
+        catch (InvalidFileNameException | FileIsEmptyException | InvalidCipherKeyException e)
+        {
+            System.out.println(e.getMessage());
+            return;
+        }
+        List<String> encryptedData = encrypter.encrypt(ALPHABET, data, key);
+        sendDataToFile(encryptedData, ENCRYPTED);
+
+    }
+
     private static void decryptFileByKey()
     {
         List<String> encryptedData = null;
@@ -120,7 +145,7 @@ public class MainApp
         try
         {
             encryptedData = receiveFile("", DECRYPT);
-            key = getKey();
+            key = receiveKey();
         }
         catch (InvalidFileNameException | FileIsEmptyException | InvalidCipherKeyException e)
         {
@@ -128,8 +153,9 @@ public class MainApp
             return;
         }
 
-        String fileName = getOutputFile();
-        fileManager.writeData(fileName, decrypter.decrypt(encryptedData, key));
+        String fileName = receiveOutputFileName();
+        List<String> decryptedData = decrypter.decrypt(encryptedData, key);
+        sendDataToFile(decryptedData, DECRYPTED, fileName);
     }
 
     private static void decryptFileByBruteForce()
@@ -160,23 +186,16 @@ public class MainApp
         }
 
 
-        String fileName = getOutputFile();
-        if (fileName.equals("exit"))
+        String fileName = receiveOutputFileName();
+        if (decryptedData.size() == 1)
         {
-            isRunning = false;
-            return;
+            sendDataToFile(decryptedData.getFirst(), DECRYPTED, fileName);
         }
-        sendMultipleFiles(decryptedData, getOutputFile());
-
-    }
-
-    private static void sendMultipleFiles(List<List<String>> decryptedData, String fileName)
-    {
-
-        for (List<String> variation : decryptedData)
+        else
         {
-            fileManager.writeData(fileName, variation);
+            sendMultipleDataToFile(decryptedData, fileName);
         }
+
     }
 
 
@@ -204,28 +223,15 @@ public class MainApp
             System.out.println(e.getMessage());
             return;
         }
-        sendMultipleFiles(decryptedData, getOutputFile());
-    }
-
-    private static void encryptFile()
-    {
-
-        List<String> data = null;
-        int key = 0;
-
-        try
+        String fileName = receiveOutputFileName();
+        if (decryptedData.size() == 1)
         {
-            data = receiveFile("","зашифровать");
-            key = getKey();
-
+            sendDataToFile(decryptedData.getFirst(), DECRYPTED, fileName);
         }
-        catch (InvalidFileNameException | FileIsEmptyException | InvalidCipherKeyException e)
+        else
         {
-            System.out.println(e.getMessage());
-            return;
+            sendMultipleDataToFile(decryptedData, fileName);
         }
-        List<String> encryptedData = encrypter.encrypt(ALPHABET, data, key);
-        sendFile(encryptedData);
 
     }
 
@@ -241,31 +247,14 @@ public class MainApp
         return fileManager.getData(fileName);
     }
 
-    private static void sendFile(List<String> data)
-    {
-        String fileName = null;
-        while (!isWritten)
-        {
-            fileName = getOutputFile();
-            if (fileName.equals("exit"))
-            {
-                isRunning = false;
-                return;
-            }
-            isWritten = fileManager.writeData(fileName, data);
-        }
-
-        System.out.println("Файл зашифрован");
-    }
-
-    private static int getKey() throws InvalidCipherKeyException
+    private static int receiveKey() throws InvalidCipherKeyException
     {
         System.out.println(delimiter);
         System.out.println("Пожалуйста введите ключ шифрования:");
         return Validator.validateCipherKey(userAnswer.nextLine());
     }
 
-    private static String getOutputFile()
+    private static String receiveOutputFileName()
     {
         System.out.println(delimiter);
         System.out.print("""
@@ -274,6 +263,52 @@ public class MainApp
                 "exit" чтобы выйти из программы:
                 """);
         return userAnswer.nextLine();
+    }
+
+    private static void sendDataToFile(List<String> data, String choice)
+    {
+        String fileName;
+        while (!isWritten)
+        {
+            fileName = receiveOutputFileName();
+            if (fileName.equals("exit"))
+            {
+                isRunning = false;
+                return;
+            }
+            isWritten = fileManager.writeData(fileName, data);
+        }
+
+        System.out.printf("Файл %s%n", choice);
+    }
+
+    private static void sendDataToFile(List<String> data, String choice, String fileName)
+    {
+        while (!isWritten)
+        {
+            isWritten = fileManager.writeData(fileName, data);
+            if (isWritten)
+            {
+                continue;
+            }
+            fileName = receiveOutputFileName();
+            if (fileName.equals("exit"))
+            {
+                isRunning = false;
+                return;
+            }
+        }
+
+        System.out.printf("Файл %s%n", choice);
+    }
+
+    private static void sendMultipleDataToFile(List<List<String>> decryptedData, String fileName)
+    {
+
+        for (List<String> variation : decryptedData)
+        {
+            fileManager.writeData(fileName, variation);
+        }
     }
 
 }
