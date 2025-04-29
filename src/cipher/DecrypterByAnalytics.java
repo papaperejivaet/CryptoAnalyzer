@@ -4,7 +4,7 @@ import exceptions.NoCoincidenceException;
 
 import java.util.*;
 
-public class DecryptByAnalytics
+public class DecrypterByAnalytics
 {
 
     private static final Map<Character, Double> RUSSIAN_FREQUENCIES = Map.ofEntries(
@@ -49,7 +49,7 @@ public class DecryptByAnalytics
     private final List<Character> alphabet;
     private static final Encrypter encrypter = new Encrypter();
 
-    public DecryptByAnalytics(List<Character> alphabet)
+    public DecrypterByAnalytics(List<Character> alphabet)
     {
         this.alphabet = alphabet;
     }

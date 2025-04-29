@@ -1,6 +1,6 @@
 package model;
 
-import cipher.DecryptByAnalytics;
+import cipher.DecrypterByAnalytics;
 import cipher.Decrypter;
 import cipher.DecrypterByBruteForce;
 import cipher.Encrypter;
@@ -27,7 +27,7 @@ public class MainApp
     private static final Encrypter encrypter = new Encrypter();
     private static final Decrypter decrypter = new Decrypter(ALPHABET);
     private static final DecrypterByBruteForce decrypterByBruteForce = new DecrypterByBruteForce(ALPHABET);
-    private static final DecryptByAnalytics decrypterByAnalytics = new DecryptByAnalytics(ALPHABET);
+    private static final DecrypterByAnalytics decrypterByAnalytics = new DecrypterByAnalytics(ALPHABET);
     private static final String delimiter = "*".repeat(50);
     private static boolean isRunning = true;
     private static boolean isWritten;
