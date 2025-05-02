@@ -12,8 +12,23 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Класс FileManager предоставляет методы для чтения и записи данных в файлы.
+ * Он использует валидацию имени файла и проверку размера файла перед чтением и записью.
+ */
 public class FileManager
 {
+
+    /**
+     * Читает данные из файла и возвращает их в виде списка строк.
+     * Выполняет валидацию имени файла и проверку на его пустоту перед чтением.
+     *
+     * @param fileName Имя файла для чтения.
+     * @return Список строк, содержащих данные из файла.
+     * @throws InvalidFileNameException если имя файла неверное.
+     * @throws FileIsEmptyException если файл пустой.
+     * @throws RuntimeException если файл не найден или произошла ошибка при чтении.
+     */
     public List<String> getData(String fileName) throws InvalidFileNameException, FileIsEmptyException
     {
         ArrayList<String> fileData = new ArrayList<>();
@@ -36,6 +51,14 @@ public class FileManager
         return fileData;
     }
 
+    /**
+     * Записывает данные в файл.
+     * Выполняет валидацию имени файла перед записью.
+     *
+     * @param fileName Имя файла для записи.
+     * @param data Список строк для записи в файл.
+     * @return true, если данные успешно записаны в файл, иначе false.
+     */
    public boolean writeData(String fileName, List<String> data)
    {
        try
@@ -55,7 +78,6 @@ public class FileManager
            {
                writer.write(line + "\n");
            }
-           writer.write("*".repeat(50) + "\n");
            writer.flush();
            return true;
        }
